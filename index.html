@@ -153,10 +153,11 @@
     </form>
 </div>
 <script>
-    Telegram.WebApp.ready();
+    const tg = Telegram.WebApp;
+    tg.ready();
 
     function getStatus() {
-        return "Статус: " + (Telegram.WebApp.isActive ? "Активен" : "Неактивен");
+        return "Статус: " + (tg.isActive ? "Активен" : "Неактивен");
     }
 
     document.getElementById("statusHeader").innerText = getStatus();
@@ -179,7 +180,8 @@
             birthdate: birthdate.value
         };
 
-        Telegram.WebApp.sendData(JSON.stringify(formData));
+        tg.sendData(JSON.stringify(formData));
+        tg.close();
     }
 </script>
 </body>
