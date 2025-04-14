@@ -127,7 +127,6 @@
 <body>
 <div class="container">
     <h2>Регистрация</h2>
-    <h1 id="statusHeader"></h1>
     <form id="registrationForm">
         <div class="form-group">
             <label class="required" for="name">Имя</label>
@@ -149,40 +148,49 @@
             <label class="required" for="birthdate">Дата рождения</label>
             <input type="date" id="birthdate" name="birthdate" required>
         </div>
-        <button onclick="completeRegistration()">Зарегистрироваться</button>
+        <button type="button" id="registerButton">Зарегистрироваться</button>
     </form>
 </div>
 <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
 
-    function getStatus() {
-        return "Статус: " + (tg.initDataUnsafe.user ? "Активен" : "Неактивен");
-    }
-
-    document.getElementById("statusHeader").innerText = getStatus();
+    // Отладка: проверяем, инициализирован ли Telegram Web App
+    console.log("Telegram Web App инициализирован:", tg.initDataUnsafe);
 
     function completeRegistration() {
-        const name = document.getElementById('name');
-        const surname = document.getElementById('surname');
-        const gender = document.getElementById('gender');
-        const birthdate = document.getElementById('birthdate');
+        try {
+            const name = document.getElementById('name').value;
+            const surname = document.getElementById('surname').value;
+            const gender = document.getElementById('gender').value;
+            const birthdate = document.getElementById('birthdate').value;
 
-        if (!name || !surname || !gender || !birthdate) {
-            alert("Пожалуйста, заполните все поля!");
-            return;
+            // Проверка, что все поля заполнены
+            if (!name || !surname || !gender || !birthdate) {
+                alert("Пожалуйста, заполните все поля!");
+                return;
+            }
+
+            const formData = {
+                name: name,
+                surname: surname,
+                gender: gender,
+                birthdate: birthdate
+            };
+
+            console.log("Отправляем данные:", formData);
+            tg.sendData(JSON.stringify(formData));
+
+            console.log("Закрываем Web App");
+            tg.close();
+        } catch (error) {
+            console.error("Ошибка:", error);
+            alert("Произошла ошибка: " + error.message);
         }
-
-        const formData = {
-            name: name.value,
-            surname: surname.value,
-            gender: gender.value,
-            birthdate: birthdate.value
-        };
-
-        tg.sendData(JSON.stringify(formData));
-        tg.close();
     }
+
+    // Добавляем обработчик события на кнопку
+    document.getElementById("registerButton").addEventListener("click", completeRegistration);
 </script>
 </body>
 </html>
