@@ -172,7 +172,7 @@
                 birthdate: birthdate
             };
 
-            console.log("Отправляем данные:", formData);
+            console.log("Отправляем данные:", JSON.stringify(formData));
             tg.sendData(JSON.stringify(formData));
 
             console.log("Закрываем Web App");
