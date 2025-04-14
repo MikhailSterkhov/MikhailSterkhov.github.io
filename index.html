@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
     <style>
         * {
             margin: 0;
@@ -149,42 +148,28 @@
             <label class="required" for="birthdate">Дата рождения</label>
             <input type="date" id="birthdate" name="birthdate" required>
         </div>
-        <button type="button" id="registerButton">Зарегистрироваться</button>
+        <button type="submit">Зарегистрироваться</button>
     </form>
 </div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
+    const webApp = window.Telegram.WebApp;
+    webApp.ready();
 
-    console.log("Telegram Web App инициализирован:", tg.initDataUnsafe);
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    function completeRegistration() {
-        try {
-            const name = document.getElementById('name').value;
-            const surname = document.getElementById('surname').value;
-            const gender = document.getElementById('gender').value;
-            const birthdate = document.getElementById('birthdate').value;
+        const formData = {
+            name: document.getElementById('name').value,
+            surname: document.getElementById('surname').value,
+            gender: document.getElementById('gender').value,
+            birthdate: document.getElementById('birthdate').value
+        };
 
-            const formData = {
-                name: name,
-                surname: surname,
-                gender: gender,
-                birthdate: birthdate
-            };
-
-            console.log("Отправляем данные:", JSON.stringify(formData));
-            tg.sendData(JSON.stringify(formData));
-
-            console.log("Закрываем Web App");
-            tg.close();
-        } catch (error) {
-            console.error("Ошибка:", error);
-            alert("Произошла ошибка: " + error.message);
-        }
-    }
-
-    // Добавляем обработчик события на кнопку
-    document.getElementById("registerButton").addEventListener("click", completeRegistration);
+        webApp.sendData(JSON.stringify(formData));
+        webApp.close();
+    });
 </script>
 </body>
 </html>
