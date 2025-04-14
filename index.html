@@ -127,6 +127,7 @@
 <body>
 <div class="container">
     <h2>Регистрация</h2>
+    <h1 id="statusHeader"></h1>
     <form id="registrationForm">
         <div class="form-group">
             <label class="required" for="name">Имя</label>
@@ -152,7 +153,13 @@
     </form>
 </div>
 <script>
-    window.Telegram.WebApp.ready();
+    Telegram.WebApp.ready();
+
+    function getStatus() {
+        return "Статус: " + (Telegram.WebApp.isActive ? "Активен" : "Неактивен");
+    }
+
+    document.getElementById("statusHeader").innerText = getStatus();
 
     function completeRegistration() {
         const name = document.getElementById('name');
@@ -172,8 +179,7 @@
             birthdate: birthdate.value
         };
 
-        window.Telegram.WebApp.sendData(JSON.stringify(formData));
-        window.Telegram.WebApp.close();
+        Telegram.WebApp.sendData(JSON.stringify(formData));
     }
 </script>
 </body>
