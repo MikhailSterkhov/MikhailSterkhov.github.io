@@ -149,7 +149,7 @@
             <label class="required" for="birthdate">Дата рождения</label>
             <input type="date" id="birthdate" name="birthdate" required>
         </div>
-        <button type="submit" onclick="completeRegistration()">Зарегистрироваться</button>
+        <button onclick="completeRegistration()">Зарегистрироваться</button>
     </form>
 </div>
 <script>
@@ -157,7 +157,7 @@
     tg.ready();
 
     function getStatus() {
-        return "Статус: " + (tg.isActive ? "Активен" : "Неактивен");
+        return "Статус: " + (tg.initDataUnsafe.user ? "Активен" : "Неактивен");
     }
 
     document.getElementById("statusHeader").innerText = getStatus();
