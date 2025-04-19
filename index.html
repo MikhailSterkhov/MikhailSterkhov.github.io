@@ -102,6 +102,81 @@
             color: #258f14;
         }
 
+        /* Стили для модального окна выбора даты */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .modal-content h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .date-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .date-selector select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .date-selector select:focus {
+            border-color: #39e91e;
+            box-shadow: 0 0 5px rgba(44, 233, 30, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        .cancel-btn {
+            background: #ddd;
+            color: #333;
+        }
+
+        .cancel-btn:hover {
+            background: #ccc;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -120,6 +195,14 @@
             input, select, button {
                 font-size: 0.9rem;
                 padding: 10px;
+            }
+
+            .modal-content {
+                padding: 15px;
+            }
+
+            .modal-content h3 {
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -146,10 +229,31 @@
         </div>
         <div class="form-group">
             <label class="required" for="birthdate">Дата рождения</label>
-            <input type="date" id="birthdate" name="birthdate" required>
+            <input type="text" id="birthdate" name="birthdate" readonly required placeholder="Выберите дату">
         </div>
         <button type="submit">Зарегистрироваться</button>
     </form>
+</div>
+
+<div class="modal" id="dateModal">
+    <div class="modal-content">
+        <h3>Выберите дату рождения</h3>
+        <div class="date-selector">
+            <select id="yearSelect">
+                <option value="">Выберите год</option>
+            </select>
+            <select id="monthSelect" disabled>
+                <option value="">Выберите месяц</option>
+            </select>
+            <select id="daySelect" disabled>
+                <option value="">Выберите день</option>
+            </select>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="cancelDate">Отмена</button>
+            <button id="confirmDate">Подтвердить</button>
+        </div>
+    </div>
 </div>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -157,6 +261,106 @@
     const webApp = window.Telegram.WebApp;
     webApp.ready();
 
+    // Открытие модального окна при клике на поле даты
+    const birthdateInput = document.getElementById('birthdate');
+    const dateModal = document.getElementById('dateModal');
+    const yearSelect = document.getElementById('yearSelect');
+    const monthSelect = document.getElementById('monthSelect');
+    const daySelect = document.getElementById('daySelect');
+    const cancelDate = document.getElementById('cancelDate');
+    const confirmDate = document.getElementById('confirmDate');
+
+    birthdateInput.addEventListener('click', () => {
+        dateModal.style.display = 'flex';
+        initializeYearSelect();
+    });
+
+    // Инициализация годов (например, от текущего года - 100 лет до текущего года - 14 лет)
+    function initializeYearSelect() {
+        yearSelect.innerHTML = '<option value="">Выберите год</option>';
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear - 1; year >= currentYear - 100; year--) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        }
+    }
+
+    // Инициализация месяцев
+    const months = [
+        'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+        'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+
+    yearSelect.addEventListener('change', () => {
+        if (yearSelect.value) {
+            monthSelect.disabled = false;
+            monthSelect.innerHTML = '<option value="">Выберите месяц</option>';
+            months.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+        } else {
+            monthSelect.disabled = true;
+            monthSelect.innerHTML = '<option value="">Выберите месяц</option>';
+            daySelect.disabled = true;
+            daySelect.innerHTML = '<option value="">Выберите день</option>';
+        }
+    });
+
+    // Инициализация дней
+    monthSelect.addEventListener('change', () => {
+        if (monthSelect.value) {
+            daySelect.disabled = false;
+            daySelect.innerHTML = '<option value="">Выберите день</option>';
+            const year = parseInt(yearSelect.value);
+            const month = parseInt(monthSelect.value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const option = document.createElement('option');
+                option.value = day;
+                option.textContent = day;
+                daySelect.appendChild(option);
+            }
+        } else {
+            daySelect.disabled = true;
+            daySelect.innerHTML = '<option value="">Выберите день</option>';
+        }
+    });
+
+    // Подтверждение выбора даты
+    confirmDate.addEventListener('click', () => {
+        const year = yearSelect.value;
+        const month = monthSelect.value;
+        const day = daySelect.value;
+        if (year && month && day) {
+            const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            birthdateInput.value = formattedDate;
+            dateModal.style.display = 'none';
+            // Сброс выбора
+            yearSelect.value = '';
+            monthSelect.value = '';
+            monthSelect.disabled = true;
+            daySelect.value = '';
+            daySelect.disabled = true;
+        }
+    });
+
+    // Отмена выбора
+    cancelDate.addEventListener('click', () => {
+        dateModal.style.display = 'none';
+        // Сброс выбора
+        yearSelect.value = '';
+        monthSelect.value = '';
+        monthSelect.disabled = true;
+        daySelect.value = '';
+        daySelect.disabled = true;
+    });
+
+    // Обработка отправки формы
     document.getElementById('registrationForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
