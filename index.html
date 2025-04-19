@@ -53,7 +53,7 @@
             font-weight: 600;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -62,17 +62,10 @@
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        input:focus, select:focus {
+        input:focus {
             border-color: #39e91e;
             box-shadow: 0 0 5px rgba(44, 233, 30, 0.5);
             outline: none;
-        }
-
-        select {
-            appearance: none;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23333"><polygon points="0,0 12,0 6,6"/></svg>') no-repeat right 10px center;
-            background-size: 10px;
-            cursor: pointer;
         }
 
         button {
@@ -102,7 +95,7 @@
             color: #258f14;
         }
 
-        /* Стили для модального окна выбора даты */
+        /* Стили для модальных окон */
         .modal {
             display: none;
             position: fixed;
@@ -151,6 +144,28 @@
             box-shadow: 0 0 5px rgba(44, 233, 30, 0.5);
         }
 
+        .gender-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gender-btn {
+            padding: 12px;
+            font-size: 1rem;
+            background: linear-gradient(45deg, #3ec11a, #70ca4d);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .gender-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(45deg, #74e357, #1ebd18);
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -192,7 +207,7 @@
                 font-size: 1.5rem;
             }
 
-            input, select, button {
+            input, button {
                 font-size: 0.9rem;
                 padding: 10px;
             }
@@ -203,6 +218,11 @@
 
             .modal-content h3 {
                 font-size: 1.2rem;
+            }
+
+            .gender-btn {
+                font-size: 0.9rem;
+                padding: 10px;
             }
         }
     </style>
@@ -221,11 +241,7 @@
         </div>
         <div class="form-group">
             <label class="required" for="gender">Пол</label>
-            <select id="gender" name="gender" required>
-                <option value="">Выберите пол</option>
-                <option value="male">Мужской</option>
-                <option value="female">Женский</option>
-            </select>
+            <input type="text" id="gender" name="gender" readonly required placeholder="Выберите пол">
         </div>
         <div class="form-group">
             <label class="required" for="birthdate">Дата рождения</label>
@@ -256,12 +272,25 @@
     </div>
 </div>
 
+<div class="modal" id="genderModal">
+    <div class="modal-content">
+        <h3>Выберите пол</h3>
+        <div class="gender-buttons">
+            <button class="gender-btn" id="maleBtn">Мужской</button>
+            <button class="gender-btn" id="femaleBtn">Женский</button>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel-btn" id="cancelGender">Отмена</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
     const webApp = window.Telegram.WebApp;
     webApp.ready();
 
-    // Открытие модального окна при клике на поле даты
+    // Логика выбора даты
     const birthdateInput = document.getElementById('birthdate');
     const dateModal = document.getElementById('dateModal');
     const yearSelect = document.getElementById('yearSelect');
@@ -275,11 +304,10 @@
         initializeYearSelect();
     });
 
-    // Инициализация годов (например, от текущего года - 100 лет до текущего года - 14 лет)
     function initializeYearSelect() {
         yearSelect.innerHTML = '<option value="">Выберите год</option>';
         const currentYear = new Date().getFullYear();
-        for (let year = currentYear - 1; year >= currentYear - 100; year--) {
+        for (let year = currentYear - 14; year >= currentYear - 100; year--) {
             const option = document.createElement('option');
             option.value = year;
             option.textContent = year;
@@ -287,7 +315,6 @@
         }
     }
 
-    // Инициализация месяцев
     const months = [
         'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
         'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
@@ -311,7 +338,6 @@
         }
     });
 
-    // Инициализация дней
     monthSelect.addEventListener('change', () => {
         if (monthSelect.value) {
             daySelect.disabled = false;
@@ -331,7 +357,6 @@
         }
     });
 
-    // Подтверждение выбора даты
     confirmDate.addEventListener('click', () => {
         const year = yearSelect.value;
         const month = monthSelect.value;
@@ -340,7 +365,6 @@
             const formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
             birthdateInput.value = formattedDate;
             dateModal.style.display = 'none';
-            // Сброс выбора
             yearSelect.value = '';
             monthSelect.value = '';
             monthSelect.disabled = true;
@@ -349,15 +373,40 @@
         }
     });
 
-    // Отмена выбора
     cancelDate.addEventListener('click', () => {
         dateModal.style.display = 'none';
-        // Сброс выбора
         yearSelect.value = '';
         monthSelect.value = '';
         monthSelect.disabled = true;
         daySelect.value = '';
         daySelect.disabled = true;
+    });
+
+    // Логика выбора пола
+    const genderInput = document.getElementById('gender');
+    const genderModal = document.getElementById('genderModal');
+    const maleBtn = document.getElementById('maleBtn');
+    const femaleBtn = document.getElementById('femaleBtn');
+    const cancelGender = document.getElementById('cancelGender');
+
+    genderInput.addEventListener('click', () => {
+        genderModal.style.display = 'flex';
+    });
+
+    maleBtn.addEventListener('click', () => {
+        genderInput.value = 'Мужской';
+        genderInput.dataset.value = 'male';
+        genderModal.style.display = 'none';
+    });
+
+    femaleBtn.addEventListener('click', () => {
+        genderInput.value = 'Женский';
+        genderInput.dataset.value = 'female';
+        genderModal.style.display = 'none';
+    });
+
+    cancelGender.addEventListener('click', () => {
+        genderModal.style.display = 'none';
     });
 
     // Обработка отправки формы
@@ -367,7 +416,7 @@
         const formData = {
             name: document.getElementById('name').value,
             surname: document.getElementById('surname').value,
-            gender: document.getElementById('gender').value,
+            gender: document.getElementById('gender').dataset.value || '',
             birthdate: document.getElementById('birthdate').value
         };
 
